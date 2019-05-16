@@ -1,10 +1,10 @@
-'''
+"""
 print details:
 python3 FaceCroppingTool.py -i image_path -v
 
 show orientation and landmarks:
 python3 FaceCroppingTool.py -i image_path -o -l
-'''
+"""
 
 # import necessary libraries
 import numpy as np
@@ -176,7 +176,7 @@ if not face:
                                  swapRB=True, crop=False)
     net.setInput(blob)
     layerOutputs = net.forward(ln)
-    
+
     # initialize our lists of detected bounding boxes, confidences, and
     # class IDs, respectively
     boxes = []
@@ -226,11 +226,13 @@ if not face:
             # extract the bounding box coordinates
             (x, y) = (boxes[i][0], boxes[i][1])
             (w, h) = (boxes[i][2], boxes[i][3])
-
-            # crop = image[y:(y + h), x:(x + w)]
+            crop = image[y:(y + h), x:(x + w)]
             # draw a bounding box rectangle and label on the image
-            
             cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 1)
+            resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
+            cv2.imwrite('cropped.jpg', resize)
+            print('cropped image is saved!!')
+
 
 else:
     if args["verbose"]:
@@ -255,12 +257,16 @@ else:
             showLandmarks(shape)
 
         x1, y1, x2, y2 = regionOfInterest(shape, face_bbox, size)
-        # crop = image[y1:y2, x1:x2]
+        crop = image[y1:y2, x1:x2]
         cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
         # cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 255), 1)
-    
-if not args["verbose"]:
-    cv2.imshow("Bounding Box", image)
-    # cv2.imshow("Cropped Image", crop)
+        resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
+        cv2.imwrite('cropped.jpg', resize)
+        print('cropped image is saved!!')
+
+# if not args["verbose"]:
+#     cv2.imshow("Bounding Box", image)
+#     cv2.imshow("Cropped Image", crop)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
