@@ -148,7 +148,7 @@ face = detector(gray, 1)
 # check if face is detected by dlib detector
 if not face:
     if args["verbose"]:
-        print("### Face not found by dlib face detector"
+        print("[Warning!!] Face not found by dlib face detector"
               "\n[INFO] Initilizing YOLO detector.....")
 
     # derive the paths to the YOLO weights and model configuration
@@ -258,10 +258,10 @@ else:
 
         x1, y1, x2, y2 = regionOfInterest(shape, face_bbox, size)
         crop = image[y1:y2, x1:x2]
-        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
+        # cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
         # cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 255), 1)
-        resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
-        cv2.imwrite('cropped.jpg', resize)
+        # resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
+        cv2.imwrite('cropped.jpg', crop)
         print('cropped image is saved!!')
 
 # if not args["verbose"]:
