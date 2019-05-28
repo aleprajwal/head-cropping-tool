@@ -15,6 +15,51 @@ import os
 import imutils
 from imutils import face_utils
 
+import sys
+sys.path.insert(1, './crfasrnn_keras/src')
+from crfasrnn_keras.src.crfrnn_model import get_crfrnn_model_def
+from crfasrnn_keras.src import util
+
+
+def wall_seperation(img, img1):
+    img1 = cv2.imread(img1)
+    img = cv2.imread(img)
+    mask = cv2.inRange(img1, (128, 128, 192), (128, 128, 192))
+    imask = mask > 0
+    green = np.zeros_like(img1, np.uint8)
+    green[imask] = img1[imask]
+    dimensions = img.shape
+    dimensions1 = green.shape
+    height = img.shape[0]
+    width = img.shape[1]
+    channels = img.shape[2]
+    img = img.reshape(dimensions[0] * dimensions[1], dimensions[2])
+    green = green.reshape(dimensions[0] * dimensions[1], dimensions[2])
+    # 128 128 192
+    for i in range(green.shape[0]):
+        if str(green[i]) == str([128, 128, 192]).replace(',', ''):
+            actual_pixel = img[i]
+            green[i] = actual_pixel
+    green = green.reshape(height, width, channels)
+    green[np.where((green == [128, 128, 192]).all(axis=2))] = [0,33,166]
+    cv2.imwrite('reshaped.jpg', green)
+
+
+def main():
+    input_file = 'image.jpg'
+    output_file = 'test_label.png'
+
+    saved_model_path = 'crfrnn_keras_model.h5'
+
+    model = get_crfrnn_model_def()
+    model.load_weights(saved_model_path)
+
+    img_data, img_h, img_w = util.get_preprocessed_image(input_file)
+    probs = model.predict(img_data, verbose=False)[0, :, :, :]
+    segmentation = util.get_label_image(probs, img_h, img_w)
+    segmentation.save(output_file)
+    wall_seperation(input_file, output_file)
+
 
 def landmarkShape(image, rect):
     shape = predictor(image, rect)
@@ -133,7 +178,7 @@ if args["verbose"]:
 size = image.shape
 # resize image to 640 width and 480 height
 # image = imutils.resize(image, width=640, height=480)
-# image = cv2.resize(image, (640, 480), interpolation=cv2.INTER_AREA)
+image = cv2.resize(image, (640, 480), interpolation=cv2.INTER_AREA)
 if args["verbose"]:
     print("Resized Image shape: {}".format(image.shape))
 
