@@ -42,14 +42,14 @@ def wall_seperation(img, img1):
             green[i] = actual_pixel
     green = green.reshape(height, width, channels)
     green[np.where((green == [128, 128, 192]).all(axis=2))] = [0,33,166]
-    cv2.imwrite('reshaped.jpg', green)
+    cv2.imwrite('test.jpg', green)
 
 
 def main():
-    input_file = 'image.jpg'
+    input_file = 'cropped.jpg'
     output_file = 'test_label.png'
 
-    saved_model_path = 'crfrnn_keras_model.h5'
+    saved_model_path = './crfasrnn_keras/crfrnn_keras_model.h5'
 
     model = get_crfrnn_model_def()
     model.load_weights(saved_model_path)
@@ -277,6 +277,7 @@ if not face:
             resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
             cv2.imwrite('cropped.jpg', resize)
             print('cropped image is saved!!')
+            main()
 
 
 else:
@@ -308,6 +309,7 @@ else:
         # resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
         cv2.imwrite('cropped.jpg', crop)
         print('cropped image is saved!!')
+        main()
 
 # if not args["verbose"]:
 #     cv2.imshow("Bounding Box", image)
