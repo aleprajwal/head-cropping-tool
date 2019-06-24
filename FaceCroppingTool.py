@@ -46,13 +46,20 @@ def wall_seperation(img, img1):
 
 
 def main():
-    input_file = 'cropped.jpg'
+    # input_file = 'cropped.jpg'
+    input_file = args['image']
     output_file = 'test_label.png'
 
     saved_model_path = './crfasrnn_keras/crfrnn_keras_model.h5'
 
     model = get_crfrnn_model_def()
     model.load_weights(saved_model_path)
+
+    # reshape input file
+    input_file = cv2.imread(input_file)
+    input_file = cv2.resize(input_file, (500, 500), interpolation=cv2.INTER_AREA)
+    cv2.imwrite('cropped.jpg', input_file)
+    input_file = 'cropped.jpg'
 
     img_data, img_h, img_w = util.get_preprocessed_image(input_file)
     probs = model.predict(img_data, verbose=False)[0, :, :, :]
@@ -164,8 +171,12 @@ predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 # initilize haarcascade face detector
 face_cascade = cv2.CascadeClassifier('haarcascade_profileface.xml')
 
+# running image segmentor
+main()
+
 # load input image
-image = cv2.imread(args["image"])
+# image = cv2.imread(args["image"])
+image = cv2.imread('test.jpg')
 
 # check if image is loaded
 if image is None:
@@ -178,7 +189,7 @@ if args["verbose"]:
 size = image.shape
 # resize image to 640 width and 480 height
 # image = imutils.resize(image, width=640, height=480)
-image = cv2.resize(image, (640, 480), interpolation=cv2.INTER_AREA)
+# image = cv2.resize(image, (640, 480), interpolation=cv2.INTER_AREA)
 if args["verbose"]:
     print("Resized Image shape: {}".format(image.shape))
 
@@ -192,13 +203,14 @@ face = detector(gray, 1)
 
 # check if face is detected by dlib detector
 if not face:
-    if args["verbose"]:
-        print("[Warning!!] Face not found by dlib face detector"
-              "\n[INFO] Initilizing YOLO detector.....")
+    print("[Warning!!] Face not found by dlib face detector"
+          "\n[INFO] Initilizing YOLO detector.....")
+
+    # if args["verbose"]:
+    #     print("[Warning!!] Face not found by dlib face detector"
+    #           "\n[INFO] Initilizing YOLO detector.....")
 
     # derive the paths to the YOLO weights and model configuration
-    # weightsPath = os.path.sep.join([args["yolo"], "yolov3-tiny-face_3000.weights"])
-    # configPath = os.path.sep.join([args["yolo"], "yolov3-tiny-face.cfg"])
     weightsPath = "./yolo/yolov3-tiny-face_3000.weights"
     configPath = "./yolo/yolov3-tiny-face.cfg"
 
@@ -207,7 +219,7 @@ if not face:
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 
     # load our input image and grab its spatial dimensions
-    image = cv2.imread(args["image"])
+    # image = cv2.imread(args["image"])
     (H, W) = image.shape[:2]
 
     # determine only the *output* layer names that we need from YOLO
@@ -273,11 +285,11 @@ if not face:
             (w, h) = (boxes[i][2], boxes[i][3])
             crop = image[y:(y + h), x:(x + w)]
             # draw a bounding box rectangle and label on the image
-            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 1)
-            resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
-            cv2.imwrite('cropped.jpg', resize)
-            print('cropped image is saved!!')
-            main()
+            # cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 1)
+            # resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
+            cv2.imwrite('cropped.jpg', crop)
+            print('*** cropped image is saved -- yolo!! ***')
+            # main()
 
 
 else:
@@ -308,12 +320,10 @@ else:
         # cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 255), 1)
         # resize = cv2.resize(crop, (500, 500), interpolation=cv2.INTER_AREA)
         cv2.imwrite('cropped.jpg', crop)
-        print('cropped image is saved!!')
-        main()
-
-# if not args["verbose"]:
-#     cv2.imshow("Bounding Box", image)
-#     cv2.imshow("Cropped Image", crop)
+        print('*** cropped image is saved -- dlib face detector!! ***')
+        # main()
+    # cv2.imshow("Bounding Box", image)
+    # cv2.imshow("Cropped Image", crop)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
